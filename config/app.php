@@ -6,6 +6,13 @@ define("BASE_DIR", realpath(__DIR__ . "/../"));
 
 $current_rout = explode("?", $_SERVER["REQUEST_URI"])[0];
 $current_rout = substr($current_rout, 1);
-echo $current_rout;
 
 define("CURRENT_ROUTE", $current_rout);
+
+global $routes ;
+$routes = [
+  "get"=>[],
+  "post"=>[],
+  "put"=>[],
+  "delete"=>[]
+];
