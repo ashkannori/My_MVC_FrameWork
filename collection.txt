@@ -1,0 +1,21 @@
+
+collection = [
+    users[
+        0 => [
+            "name" => "Ashkan" ,
+            "email" => "Ashkan@gmail.com"
+        ]
+        1 => [
+            "name" => "Reza" ,
+            "email" => "Reza@gmail.com"
+        ]
+        2 => [
+            "name" => "AhmadReza" ,
+            "email" => "AhmadReza@gmail.com"
+        ]
+        3 => [
+            "name" => "AliReza" ,
+            "email" => "AliReza@gmail.com"
+        ]
+    ]
+]
