@@ -40,9 +40,9 @@ trait HasQueryBuilder
         $this->where = [];
     }
 
-    protected function setOrderBy($key, $expression)
+    protected function setOrderBy($attribute, $expression)
     {
-        array_push($this->orderBy, $key . " " . $expression);
+        array_push($this->orderBy, $attribute . " " . $expression);
     }
 
     protected function resetOrderBy()
