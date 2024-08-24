@@ -24,6 +24,17 @@ trait HasCRUD
         $this->setSql("INSERT INTO {$this->table} SET " . $this->setFillAble() . $this->createdAt . "= NOW()");
         $this->executeQuery();
         $this->resetQuery();
+        $object = $this->find(DBConnection::newInsertedId());
+        $defaultVariables = get_class_vars(get_called_class());
+        $allVariables = get_class_vars($object);
+        $differentVariables = array_diff(array_keys($allVariables), array_keys($defaultVariables));
+
+        foreach ($differentVariables as $attribute) {
+            $this->$attribute = $object->$attribute;
+        }
+
+        $this->resetQuery();
+        return $this;
     }
 
     protected function update()
@@ -33,5 +44,19 @@ trait HasCRUD
         $this->setValues($this->primaryKey, $this->{$this->primaryKey});
         $this->executeQuery();
         $this->resetQuery();
+    }
+
+    protected function find($id)
+    {
+        $this->setSql("SELECT * FROM " . $this->table);
+        $this->setWhere("AND ", $this->primaryKey . " = ?");
+        $this->setValues($this->primaryKey, $id);
+        $statement = $this->executeQuery();
+        $data = $statement;
+        if ($data) {
+            return $this->setAttributes($data);
+        } else {
+            return null;
+        }
     }
 }
