@@ -1,113 +1,107 @@
 <?php
 
+// CRUD => create read update delete
+
 namespace Core\Database\Traits;
 
 use Core\Database\DBConnection\DBConnection;
 
-trait HasCRUD
-{
-    protected function setFillAble()
-    {
-        $fillbles = [];
+trait HasCRUD{
 
-        foreach ($this->fillable as $attribute) {
-            if (isset($this->attribute)) {
-                array_push($fillbles, $attribute . " = ?");
-                $this->setValue($attribute, $this->attribute);
-            }
+    protected function setFillabels($array){
+        $fillables = [];
+        foreach($this->fillable as $attribute){
+            array_push($fillables, $attribute." = ?");
+            $this->setValues($attribute, $array[$attribute]);
         }
-        return implode(", ", $fillbles);
+        return implode(', ' ,$fillables);
     }
 
-    protected function insert()
-    {
-        $this->setSql("INSERT INTO {$this->table} SET " . $this->setFillAble() . $this->createdAt . "= NOW()");
+    public function insert($array){
+        $this->setSql("INSERT INTO {$this->table} SET ". $this->setFillabels($array)."," . $this->createdAt."=Now();");
         $this->executeQuery();
         $this->resetQuery();
         $object = $this->find(DBConnection::newInsertedId());
         $defaultVariables = get_class_vars(get_called_class());
-        $allVariables = get_class_vars($object);
-        $differentVariables = array_diff(array_keys($allVariables), array_keys($defaultVariables));
-
-        foreach ($differentVariables as $attribute) {
+        $allVariables = get_object_vars($object);
+        $differentVariables = array_diff(array_keys($allVariables),array_keys($defaultVariables));
+        foreach ($differentVariables as $attribute){
             $this->$attribute = $object->$attribute;
         }
+        $this->resetQuery();
+        return $this;
 
+    }
+
+    public function update($array){
+        $this->setSql("UPDATE ".$this->table." SET ".$this->setFillabels($array).", ".$this->updatedAt."=Now()");
+        $this->setWhere("AND " , $this->primaryKey." = ?");
+        $this->setValues($this->primaryKey, $this->{$this->primaryKey});
+        $this->executeQuery();
         $this->resetQuery();
         return $this;
     }
 
-    protected function update()
-    {
-        $this->setSql("INSERT INTO {$this->table} SET " . $this->setFillAble() . $this->updatedAt . "= NOW()");
-        $this->setWhere("AND ", $this->primaryKey . " = ?");
-        $this->setValues($this->primaryKey, $this->{$this->primaryKey});
-        $this->executeQuery();
-        $this->resetQuery();
-    }
-
-    protected function find($id)
-    {
-        $this->setSql("SELECT * FROM " . $this->table);
-        $this->setWhere("AND ", $this->primaryKey . " = ?");
+    public function find($id){
+        $this->setSql("SELECT * FROM ".$this->table);
+        $this->setWhere("AND" , $this->primaryKey . " = ? ");
         $this->setValues($this->primaryKey, $id);
         $statement = $this->executeQuery();
-        $data = $statement;
-        if ($data) {
+        $data = $statement->fetch();
+        if($data){
             return $this->setAttributes($data);
-        } else {
+        }else{
             return null;
         }
     }
 
-    protected function get()
-    {
-        $this->setSql("SELECT * FROM " . $this->table);
+    public function get(){
+        $this->setSql(" SELECT * FROM " . $this->table);
         $statement = $this->executeQuery();
-        $data = $statement;
-        if ($data) {
+        $data = $statement->fetchAll();
+        if($data){
             $this->setObject($data);
             return $this->collection;
-        } else {
+        }else{
             return [];
         }
     }
 
-    protected function delete($id)
-    {
+    public function delete($id){
         $object = $this;
         $this->resetQuery();
-        if ($id) {
+        if($id){
             $object = $this->find($id);
             $this->resetQuery();
         }
-        $object->setSql("DELETE FROM" . $this->table);
-        $object->setWhere("AND", $this->primaryKey . " = ?");
-        $object->setValues($this->primaryKey, $object{$object->primaryKey});
+        $object->setSql("DELETE FROM ".$object->table);
+        $object->setWhere("AND" , $object->primaryKey . " = ? ");
+        $object->setValues($this->primaryKey, $id);
         return $object->executeQuery();
     }
 
-    protected function where($attribute, $operation, $value)
-    {
-        // where("buy", " >= " , 100)
+    public function where($attribute, $operation , $value){
 
-        $condition = $attribute . " " . $operation . " ?";
+        // where('price' , '>=' , 500)
+        $condition = $attribute .' '.$operation .' ?';
         $this->setValues($attribute, $value);
 
         $operator = " AND ";
+
         $this->setWhere($operator, $condition);
         return $this;
+
     }
 
-    protected function orderBy($attribute, $expression)
-    {
+    public function orderBy($attribute,$expression){
         $this->setOrderBy($attribute, $expression);
         return $this;
     }
 
-    protected function limit($offset, $number)
-    {
-        $this->setLimit($offset, $number);
+    public function limit($offset , $number){
+        $this->setLimit($offset , $number);
         return $this;
     }
+
+
 }
